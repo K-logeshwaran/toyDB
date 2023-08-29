@@ -2,7 +2,7 @@ package Driver
 
 import (
 	"errors"
-
+	"fmt"
 	"strings"
 
 	"log"
@@ -21,28 +21,45 @@ type DataBase struct {
 }
 
 // Done
-func NewDB(loc string, logger *log.Logger, col Collection) *DataBase {
+func doesFileExist(fileName string) bool {
+	_, error := os.Stat(fileName)
+	return os.IsNotExist(error)
+}
+func NewDB(loc string, logger string, col Collection) *DataBase {
+	_, err := os.Stat(loc)
+	if os.IsNotExist(err) {
+		err = os.Mkdir(loc, 0777)
+		if err != nil {
+			panic(err)
+		}
+	}
+	var (
+		fs *os.File
+		e  error
+	)
+	if doesFileExist(logger) {
+		fs, e = os.Create(logger)
+		if e != nil {
+			fmt.Println(e)
+		}
+		fmt.Println("Created")
+	} else {
+		fs, _ = os.Open(logger)
+		fmt.Println("alredy")
+	}
+	l := log.New(fs, "myJSON DB reports -> ", log.LstdFlags)
+
+	CreateCollectionFiles("."+loc, l)
 
 	return &DataBase{
 		Location: loc,
-		Logger:   logger,
+		Logger:   l,
 		//FileChan: c,
 		collections: col,
 	}
 }
 
 // Done
-func (d *DataBase) CreateDB() {
-	_, err := os.Stat(d.Location)
-
-	CreateCollectionFiles("."+d.Location, d.Logger)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(d.Location, 0777)
-		if err != nil {
-			d.Logger.Fatal(err)
-		}
-	}
-}
 
 // Done
 func (d *DataBase) CreateCollection(name string) {
