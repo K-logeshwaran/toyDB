@@ -2,7 +2,7 @@ package Driver
 
 import (
 	"errors"
-	"fmt"
+
 	"strings"
 
 	"log"
@@ -14,8 +14,8 @@ import (
 )
 
 type DataBase struct {
-	Location    string
-	Logger      *log.Logger
+	Location string
+	//Logger      *log.Logger
 	collections Collection
 	//FileChan    chan []byte
 }
@@ -32,52 +32,64 @@ func NewDB(loc string, logger string, col Collection) *DataBase {
 		if err != nil {
 			panic(err)
 		}
-	}
-	var (
-		fs *os.File
-		e  error
-	)
-	if doesFileExist(logger) {
-		fs, e = os.Create(logger)
-		if e != nil {
-			fmt.Println(e)
+		// var (
+		// 	fs *os.File
+		// 	e  error
+		// )
+
+		// open log file
+		logFile, err := os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			log.Panic(err)
 		}
-		fmt.Println("Created")
+		log.SetOutput(logFile)
+		log.SetFlags(log.Lshortfile | log.LstdFlags)
+		log.Println("Logging to custom file")
+		CreateCollectionFiles("." + loc)
+		return &DataBase{
+			Location: loc,
+			//FileChan: c,
+			collections: col,
+		}
 	} else {
-		fs, _ = os.Open(logger)
-		fmt.Println("alredy")
+		logFile, err := os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			log.Panic(err)
+		}
+		log.SetOutput(logFile)
+		log.SetFlags(log.Lshortfile | log.LstdFlags)
+		log.Println("Logging to custom file")
+		CreateCollectionFiles("." + loc)
+		return &DataBase{
+			Location: loc,
+			//FileChan: c,
+			collections: col,
+		}
 	}
-	l := log.New(fs, "myJSON DB reports -> ", log.LstdFlags)
 
-	CreateCollectionFiles("."+loc, l)
-
-	return &DataBase{
-		Location: loc,
-		Logger:   l,
-		//FileChan: c,
-		collections: col,
-	}
 }
 
 // Done
 
 // Done
-func (d *DataBase) CreateCollection(name string) {
+func (d *DataBase) CreateCollection(name string) error {
 	loc := path.Join(d.Location, name)
 
 	_, err := os.Stat(loc)
 
 	if os.IsNotExist(err) {
+		log.Printf("%s collection Created \n", name)
 		err = os.Mkdir(loc, 0777)
 		d.collections.AddCollection(name)
-		d.Logger.Println(d.collections)
-		d.collections.Commit()
+		log.Println(d.collections)
+		d.collections.Commit(d.Location)
 		if err != nil {
-			d.Logger.Fatal(err)
+			return (err)
 		}
 	} else {
-		d.Logger.Printf("%s collection already exists \n", name)
+		log.Printf("%s collection already exists \n", name)
 	}
+	return nil
 }
 
 func (d *DataBase) IsCollectionExist(name string) bool {
@@ -98,15 +110,15 @@ func (d *DataBase) PopulateRecords(collection string, data []byte) {
 	file, err := os.Create(fileLocation)
 
 	if err != nil {
-		d.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 	_, err = file.Write(jsonMap.ToBytes())
 
 	if err != nil {
-		d.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	d.Logger.Println("Data Addes successfully")
+	log.Println("Data Addes successfully")
 
 }
 
@@ -116,12 +128,12 @@ func createuuid() string {
 }
 
 // Done
-func (d *DataBase) ReadAll(collection string) []Wrapper {
+func (d *DataBase) ReadAll(collection string) ([]Wrapper, error) {
 	w := []Wrapper{}
 	loc := path.Join(d.Location, collection)
 	records, err := os.ReadDir(loc)
 	if err != nil {
-		panic("Dir not found")
+		return nil, errors.New("Collection Not exixts")
 	}
 	for _, record := range records {
 
@@ -131,7 +143,7 @@ func (d *DataBase) ReadAll(collection string) []Wrapper {
 		}
 		w = append(w, *BuildWrapper(r))
 	}
-	return w
+	return w, nil
 
 }
 
@@ -194,8 +206,8 @@ func (d *DataBase) ListCollections() *Wrapper {
 	return BuildWrapper(da)
 }
 
-func (d *DataBase) Where(collection string, field string, value interface{}) ([]string, error) {
-	var reA []string
+func (d *DataBase) Where(collection string, field string, value interface{}) ([]Wrapper, error) {
+	var reA []Wrapper
 	if d.IsCollectionExist(collection) {
 		loc := path.Join(d.Location, collection)
 		files, err := os.ReadDir(loc)
@@ -205,8 +217,8 @@ func (d *DataBase) Where(collection string, field string, value interface{}) ([]
 		for _, v := range files {
 			d, _ := os.ReadFile(path.Join(loc, v.Name()))
 			w := BuildWrapper(d)
-			if w.data[field] == value {
-				reA = append(reA, w.ToJson())
+			if w.Value()[field] == value {
+				reA = append(reA, w.Value())
 			}
 		}
 		return reA, nil

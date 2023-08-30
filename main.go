@@ -50,13 +50,12 @@ package main
 import (
 	//"encoding/json"
 
-	// //"api.com/my_api/routes"
+	//"api.com/my_api/routes"
 	"flag"
 	"fmt"
-	"net/http"
-
 	"github.com/K-logeshwaran/goDb/Driver"
 	"github.com/K-logeshwaran/goDb/handlers"
+	"net/http"
 )
 
 func TOBYTES(s string) []byte {
@@ -66,24 +65,22 @@ func TOBYTES(s string) []byte {
 func main() {
 	var (
 		dbLoc string
-		//logFileLoc string
-
 	)
 	flag.StringVar(&dbLoc, "location", "./database", "Location of your Database")
-	//flag.StringVar(&logFileLoc, "logger", "logger.log", "Location of your Database Log file")
 	flag.Parse()
 	logFileLoc := dbLoc + "/logger.log"
-	//	fmt.Println(doesFileExist(dbLoc + "/logger.log"))
+	// DB := Driver.NewDB(dbLoc, logFileLoc, Driver.NewCollection(dbLoc))
+	// DB.CreateCollection("thevudiya1")
 
-	//l := log.New(fs, "myJSON DB reports -> ", log.LstdFlags)
-	api := handlers.NewApi(dbLoc, logFileLoc, Driver.NewCollection())
-
-	//DB := Driver.NewDB(dbLoc, l, Driver.NewCollection())
-	// DB.CreateDB()
-	// DB.CreateCollection("dev34")
+	api := handlers.NewApi(dbLoc, logFileLoc, Driver.NewCollection(dbLoc))
 	fmt.Println("Listening on  http://localhost:2080")
+	fmt.Println("Listening on dasdasda")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", api.ServeHTTP)
+	mux.HandleFunc("/collection", api.Collection)
+	mux.HandleFunc("/records", api.Records)
+	mux.HandleFunc("/findone", api.FindOne)
+	mux.HandleFunc("/where", api.Where)
 
 	http.ListenAndServe(":2080", mux)
 
