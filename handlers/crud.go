@@ -58,7 +58,7 @@ func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		clc := r.FormValue("collection")
 		rw.Header().Set("Content-Type", "application/json")
-		wraper, err := a.D.ReadAll(clc)
+		wraper, err := a.D.ReadAll(clc, 10)
 		if err != nil {
 			rw.WriteHeader(http.StatusBadRequest)
 			rw.Write(TOBYTES("Collection Does not Exists "))

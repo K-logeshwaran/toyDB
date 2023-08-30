@@ -128,21 +128,61 @@ func createuuid() string {
 }
 
 // Done
-func (d *DataBase) ReadAll(collection string) ([]Wrapper, error) {
+func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
+	//count := 0
 	w := []Wrapper{}
 	loc := path.Join(d.Location, collection)
 	records, err := os.ReadDir(loc)
 	if err != nil {
 		return nil, errors.New("Collection Not exixts")
 	}
-	for _, record := range records {
-
-		r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
-		if err != nil {
-			panic("something went wrong line 98")
-		}
-		w = append(w, *BuildWrapper(r))
+	resultCh := make(chan Wrapper)
+	errorCh := make(chan error)
+	for i := 0; i < limit; i++ {
+		go func(record os.DirEntry) {
+			r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
+			if err != nil {
+				errorCh <- err
+				return
+			}
+			resultCh <- *BuildWrapper(r)
+		}(records[i])
 	}
+	// for _, record := range records {
+	// 	// if count == limit {
+	// 	// 	break
+	// 	// }
+
+	// 	go func(record os.DirEntry) {
+	// 		r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
+	// 		if err != nil {
+	// 			errorCh <- err
+	// 			return
+	// 		}
+	// 		resultCh <- *BuildWrapper(r)
+	// 	}(record)
+	// 	//count += 1
+	// }
+	for i := 0; i < limit; i++ {
+		select {
+		case wrapper := <-resultCh:
+			w = append(w, wrapper)
+		case err := <-errorCh:
+			close(resultCh)
+			close(errorCh)
+			return nil, err
+		}
+	}
+
+	//OLD CODE
+	// for _, record := range records {
+
+	// 	r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
+	// 	if err != nil {
+	// 		panic("something went wrong line 98")
+	// 	}
+	// 	w = append(w, *BuildWrapper(r))
+	// }
 	return w, nil
 
 }
