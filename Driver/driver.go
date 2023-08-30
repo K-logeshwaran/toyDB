@@ -99,7 +99,7 @@ func (d *DataBase) IsCollectionExist(name string) bool {
 }
 
 // Done
-func (d *DataBase) PopulateRecords(collection string, data []byte) {
+func (d *DataBase) PopulateRecords(collection string, data []byte) (message string, err error) {
 
 	ObjId := createuuid()
 	fileName := ObjId + ".json"
@@ -110,16 +110,18 @@ func (d *DataBase) PopulateRecords(collection string, data []byte) {
 	file, err := os.Create(fileLocation)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return "Something went wrong", err
 	}
 	_, err = file.Write(jsonMap.ToBytes())
 
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return "Something went wrong", err
 	}
 
 	log.Println("Data Addes successfully")
-
+	return "Data Addes successfully", nil
 }
 
 // Done
@@ -135,6 +137,10 @@ func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
 	records, err := os.ReadDir(loc)
 	if err != nil {
 		return nil, errors.New("Collection Not exixts")
+	}
+	if limit > (len(records) - 1) {
+		log.Println("LIMIT EXITED; LIMIT IS ", len(records))
+		limit = len(records) - 1
 	}
 	resultCh := make(chan Wrapper)
 	errorCh := make(chan error)

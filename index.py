@@ -1,4 +1,6 @@
 import requests
+import time
+import sys 
 dummy_data = [
     {
         "age": 25,
@@ -200,7 +202,7 @@ dummy_data = [
     },
     # ... continue with more objects
 ]
-url = "http://localhost:2080/records?collection=users/"
+url = sys.argv[1]
 
 # Sending the POST request
 for i in dummy_data:
@@ -210,7 +212,10 @@ for i in dummy_data:
     # Handling the response
     if response.status_code == 200:
         print("POST request was successful!")
-        #print("Response:", response.json())
+        print("Response:", response.content)
     else:
         print("POST request failed with status code:", response.status_code)
         #print("Response:", response.text)
+    time.sleep(2)
+
+print(f"no of data added {len(dummy_data)}")

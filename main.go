@@ -65,8 +65,10 @@ func TOBYTES(s string) []byte {
 func main() {
 	var (
 		dbLoc string
+		PORT  string
 	)
 	flag.StringVar(&dbLoc, "location", "./database", "Location of your Database")
+	flag.StringVar(&PORT, "port", "2080", "sets port for database api")
 	flag.Parse()
 	logFileLoc := dbLoc + "/logger.log"
 	// DB := Driver.NewDB(dbLoc, logFileLoc, Driver.NewCollection(dbLoc))
@@ -82,6 +84,6 @@ func main() {
 	mux.HandleFunc("/findone", api.FindOne)
 	mux.HandleFunc("/where", api.Where)
 
-	http.ListenAndServe(":2080", mux)
+	http.ListenAndServe(":"+PORT, mux)
 
 }

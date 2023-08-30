@@ -3,6 +3,7 @@ package handlers
 import (
 	"io"
 	"log"
+	"strconv"
 
 	"github.com/K-logeshwaran/goDb/Driver"
 
@@ -44,7 +45,7 @@ func (a *DBApi) Collection(rw http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		clcObj := a.D.ListCollections()
 		log.Println(clcObj.Value()["Collection"])
-		rw.Write(TOBYTES("BRRRRRRRRRRRRRR"))
+		rw.Header().Set("Content-Type", "application/json")
 		rw.Write(clcObj.ToBytes())
 
 	default:
@@ -57,8 +58,18 @@ func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
 
 	case http.MethodGet:
 		clc := r.FormValue("collection")
+		limit := r.FormValue("limit")
+
+		l, err := strconv.Atoi(limit)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write(TOBYTES("InternalServerError"))
+			log.Panic(err)
+			return
+
+		}
 		rw.Header().Set("Content-Type", "application/json")
-		wraper, err := a.D.ReadAll(clc, 10)
+		wraper, err := a.D.ReadAll(clc, l)
 		if err != nil {
 			rw.WriteHeader(http.StatusBadRequest)
 			rw.Write(TOBYTES("Collection Does not Exists "))
@@ -67,11 +78,27 @@ func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
 		rw.Write(Driver.WrapperArrayToBytes(wraper))
 
 	case http.MethodPost:
-
 		clc := r.FormValue("collection")
-		rw.Header().Set("Content-Type", "application/json")
+		//rw.Header().Set("Content-Type", "application/json")
+		resultCh := make(chan string)
+		errorCh := make(chan error)
 		post, _ := io.ReadAll(r.Body)
-		a.D.PopulateRecords(clc, post)
+		go func(c string, d []byte) {
+			msg, err := a.D.PopulateRecords(c, d)
+			if err != nil {
+				errorCh <- err
+			} else {
+				resultCh <- msg
+			}
+		}(clc, post)
+		select {
+		case r := <-resultCh:
+			rw.Write(TOBYTES("<h1>" + r + "</h1>"))
+		case e := <-errorCh:
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write(TOBYTES("<h1>" + e.Error() + "</h1>"))
+		}
+
 	default:
 		rw.Write(TOBYTES("METHOD NOT ALLOWED"))
 	}
