@@ -59,6 +59,16 @@ func BuildWrapper(Data []byte) *Wrapper {
 }
 
 func (w *Wrapper) AddField(name string, value interface{}) *Wrapper {
+	if (*w)[name] != nil {
+		return w
+	}
+	(*w)[name] = value // Use w directly as it's a map
+
+	return w
+}
+
+func (w *Wrapper) Update(name string, value interface{}) *Wrapper {
+
 	(*w)[name] = value // Use w directly as it's a map
 
 	return w

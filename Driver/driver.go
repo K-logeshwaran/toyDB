@@ -226,7 +226,7 @@ func (d *DataBase) UpdateOneById(collection, id, filed string, value interface{}
 	if w.Value()[filed] == nil {
 		return nil, nil
 	}
-	w.AddField(filed, value)
+	w.Update(filed, value)
 	d.commit(filePath, w)
 	return w, nil
 }

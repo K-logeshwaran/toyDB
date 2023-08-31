@@ -83,6 +83,8 @@ func main() {
 	mux.HandleFunc("/records", api.Records)
 	mux.HandleFunc("/findone", api.FindOne)
 	mux.HandleFunc("/where", api.Where)
+	mux.HandleFunc("/update", api.Update)
+	mux.HandleFunc("/addField", api.AddNewField)
 
 	http.ListenAndServe(":"+PORT, mux)
 
