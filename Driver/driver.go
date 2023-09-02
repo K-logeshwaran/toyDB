@@ -21,10 +21,11 @@ type DataBase struct {
 }
 
 // Done
-func doesFileExist(fileName string) bool {
-	_, error := os.Stat(fileName)
-	return os.IsNotExist(error)
-}
+//
+//	func doesFileExist(fileName string) bool {
+//		_, error := os.Stat(fileName)
+//		return os.IsNotExist(error)
+//	}
 func NewDB(loc string, logger string, col Collection) *DataBase {
 	_, err := os.Stat(loc)
 	if os.IsNotExist(err) {
@@ -39,9 +40,11 @@ func NewDB(loc string, logger string, col Collection) *DataBase {
 
 		// open log file
 		logFile, err := os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+
 		if err != nil {
 			log.Panic(err)
 		}
+		defer logFile.Close()
 		log.SetOutput(logFile)
 		log.SetFlags(log.Lshortfile | log.LstdFlags)
 		log.Println("Logging to custom file")
@@ -53,9 +56,11 @@ func NewDB(loc string, logger string, col Collection) *DataBase {
 		}
 	} else {
 		logFile, err := os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+
 		if err != nil {
 			log.Panic(err)
 		}
+		defer logFile.Close()
 		log.SetOutput(logFile)
 		log.SetFlags(log.Lshortfile | log.LstdFlags)
 		log.Println("Logging to custom file")
@@ -113,6 +118,7 @@ func (d *DataBase) PopulateRecords(collection string, data []byte) (message stri
 		log.Panic(err)
 		return "Something went wrong", err
 	}
+	defer file.Close()
 	_, err = file.Write(jsonMap.ToBytes())
 
 	if err != nil {
@@ -121,6 +127,7 @@ func (d *DataBase) PopulateRecords(collection string, data []byte) (message stri
 	}
 
 	log.Println("Data Addes successfully")
+
 	return "Data Addes successfully", nil
 }
 
@@ -176,6 +183,7 @@ func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
 		case err := <-errorCh:
 			close(resultCh)
 			close(errorCh)
+			log.Panicln(err)
 			return nil, err
 		}
 	}
@@ -248,7 +256,8 @@ func (d *DataBase) commit(recordpath string, w *Wrapper) {
 
 func (d *DataBase) ListCollections() *Wrapper {
 
-	da, _ := os.ReadFile(COLLECTIONFILESLOC)
+	//da, _ := os.ReadFile(COLLECTIONFILESLOC)
+	da, _ := os.ReadFile(d.Location + "/collections.json")
 	return BuildWrapper(da)
 }
 
@@ -257,10 +266,12 @@ func (d *DataBase) Where(collection string, field string, value interface{}) ([]
 	if d.IsCollectionExist(collection) {
 		loc := path.Join(d.Location, collection)
 		files, err := os.ReadDir(loc)
+
 		if err != nil {
 			panic("Err line 113")
 		}
 		for _, v := range files {
+
 			d, _ := os.ReadFile(path.Join(loc, v.Name()))
 			w := BuildWrapper(d)
 			if w.Value()[field] == value {

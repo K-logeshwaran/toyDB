@@ -11,7 +11,7 @@ type Collection struct {
 	Collections []string `json:"Collections"`
 }
 
-const COLLECTIONFILESLOC string = "E:\\SideProjects\\myDataBase\\database\\collections.json"
+//const COLLECTIONFILESLOC string = "E:\\SideProjects\\myDataBase\\database\\collections.json"
 
 func CreateCollectionFiles(loc string) {
 	fp := path.Join(loc, "collections.json")
