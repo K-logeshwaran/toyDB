@@ -2,11 +2,12 @@ package Driver
 
 import (
 	"errors"
-
-	"strings"
-
+	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 
 	"github.com/google/uuid"
 
@@ -27,6 +28,25 @@ type DataBase struct {
 //		return os.IsNotExist(error)
 //	}
 func NewDB(loc string, logger string, col Collection) *DataBase {
+	var logFile *os.File
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	// Create a channel to indicate when the cleanup is done
+	//doneChan := make(chan bool, 1)
+
+	// Handle the OS interrupt signal
+	go func() {
+		<-sigChan // Wait for the interrupt signal (Ctrl+C)
+		fmt.Println("\nReceived an interrupt signal. Performing cleanup...")
+
+		logFile.Close()
+
+		fmt.Println("Cleanup complete.File closed. Exiting.")
+		os.Exit(0)
+	}()
+
 	_, err := os.Stat(loc)
 	if os.IsNotExist(err) {
 		err = os.Mkdir(loc, 0777)
@@ -39,12 +59,12 @@ func NewDB(loc string, logger string, col Collection) *DataBase {
 		// )
 
 		// open log file
-		logFile, err := os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+		logFile, err = os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 
 		if err != nil {
 			log.Panic(err)
 		}
-		defer logFile.Close()
+		//defer logFile.Close()
 		log.SetOutput(logFile)
 		log.SetFlags(log.Lshortfile | log.LstdFlags)
 		log.Println("Logging to custom file")
@@ -55,12 +75,12 @@ func NewDB(loc string, logger string, col Collection) *DataBase {
 			collections: col,
 		}
 	} else {
-		logFile, err := os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+		logFile, err = os.OpenFile(logger, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 
 		if err != nil {
 			log.Panic(err)
 		}
-		defer logFile.Close()
+		//defer logFile.Close()
 		log.SetOutput(logFile)
 		log.SetFlags(log.Lshortfile | log.LstdFlags)
 		log.Println("Logging to custom file")
@@ -102,10 +122,17 @@ func (d *DataBase) IsCollectionExist(name string) bool {
 	_, err := os.Stat(loc)
 	return !os.IsNotExist(err)
 }
+func (d *DataBase) IsCollectionNotExist(name string) bool {
+	loc := path.Join(d.Location, name)
+	_, err := os.Stat(loc)
+	return os.IsNotExist(err)
+}
 
 // Done
 func (d *DataBase) PopulateRecords(collection string, data []byte) (message string, err error) {
-
+	if d.IsCollectionNotExist(collection) {
+		return "Collection " + collection + " not found", errors.New("Collection " + collection + " not found")
+	}
 	ObjId := createuuid()
 	fileName := ObjId + ".json"
 	fileLocation := path.Join(d.Location, collection, fileName)
@@ -115,7 +142,7 @@ func (d *DataBase) PopulateRecords(collection string, data []byte) (message stri
 	file, err := os.Create(fileLocation)
 
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 		return "Something went wrong", err
 	}
 	defer file.Close()

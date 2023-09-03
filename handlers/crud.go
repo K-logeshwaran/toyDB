@@ -96,8 +96,8 @@ func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
 		case r := <-resultCh:
 			rw.Write(TOBYTES("<h1>" + r + "</h1>"))
 		case e := <-errorCh:
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write(TOBYTES("<h1>" + e.Error() + "</h1>"))
+			rw.WriteHeader(http.StatusBadRequest)
+			rw.Write(TOBYTES(e.Error()))
 		}
 
 	default:

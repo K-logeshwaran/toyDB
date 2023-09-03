@@ -50,11 +50,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
-
 	"github.com/K-logeshwaran/goDb/Driver"
 	"github.com/K-logeshwaran/goDb/handlers"
+	"log"
+	"net/http"
 )
 
 func TOBYTES(s string) []byte {

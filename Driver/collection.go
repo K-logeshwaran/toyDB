@@ -20,7 +20,7 @@ func CreateCollectionFiles(loc string) {
 	if os.IsNotExist(err) {
 		fs, _ := os.Create(fp)
 		fs.Close()
-		log.Println("Collection created success")
+		log.Println("collections.json file creation success")
 	}
 
 }
