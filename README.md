@@ -24,12 +24,13 @@ ToyDB is highly configurable, allowing you to specify the location of your datab
 
 To get started with ToyDB, follow these steps:
 
-1. Clone this repository to your local machine.
-2. Install ToyDB by running the installation script or following the installation instructions in the documentation.
-3. Create a new database or use an existing one.
-4. Use the command-line interface (CLI) to manage and query your data.
 
-For detailed usage instructions, refer to the documentation in the repository.
+
+1. Install ToyDB binary 
+2. Or Clone this repository to your local machine.
+
+3. Create a new database or use an existing one.
+4. Use https://github.com/K-logeshwaran/toydb-query node js client
 
 ## Usage
 
