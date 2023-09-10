@@ -126,7 +126,7 @@ func (a *DBApi) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
     <ul>
         <li><code>-location</code>: Specifies the location of your database. Default value is <code>./database</code>.</li>
-        <li><code>-port</code>: Sets the port for the database API. Default value is <code>2080</code>.</li>
+        <li><code>-port</code>: Sets the port for the database API. Default value is <code>3134</code>.</li>
         <li><code>-serve</code>: Starts the server on the given port if provided.</li>
     </ul>
 
@@ -138,7 +138,7 @@ func (a *DBApi) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
         <code>./toydb -serve</code>
     </pre>
 
-    <p>By default, the server will listen on <a href="http://localhost:2080">http://localhost:2080</a>.</p>
+    <p>By default, the server will listen on <a href="http://localhost:3134">http://localhost:3134</a>.</p>
 
     <h2>API Endpoints</h2>
 
