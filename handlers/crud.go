@@ -23,15 +23,176 @@ type DBApi struct {
 
 func (a *DBApi) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	fmt.Println("Logger value")
-	log.Println("dassadasd")
-	fmt.Println(a.D.Where("users", "name", "Cynthia"))
-	bb, _ := a.D.Where("users", "name", "Cynthia")
-	fmt.Println(Driver.WrapperArrayToBytes(bb))
-	log.Println(a.D.Where("users", "name", "Cynthia"))
-	//WrapperArrayToBytes
+	rw.Write(TOBYTES(`
+	<!DOCTYPE html>
+<html>
 
-	fmt.Println("Listening on dasdasda")
-	rw.Write(Driver.WrapperArrayToBytes(bb))
+<head>
+    <title>ToyDB Database</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #444;
+        }
+
+        h3 {
+            color: #555;
+        }
+
+        p {
+            color: #666;
+        }
+
+        ol,
+        ul {
+            color: #777;
+            margin-left: 20px;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        hr {
+            border: 1px solid #ddd;
+        }
+
+        code {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2px 5px;
+        }
+		#desc{
+			text-align: center;
+		}
+    </style>
+</head>
+
+<body>
+
+    <h1><a href="https://github.com/K-logeshwaran/toyDB">ToyDB Database<a></h1>
+
+    <p>ToyDB is a lightweight JSON database designed to simplify data storage and retrieval for small to medium-scale applications.</p>
+
+    <h2>Features</h2>
+
+    <h3>JSON-Based</h3>
+    <p>ToyDB uses JSON as the primary data format, making it easy to work with structured data. JSON is human-readable, making it straightforward to inspect and manipulate data.</p>
+
+    <h3>File System Storage</h3>
+    <p>Data is stored directly on the file system, eliminating the need for a separate database server. This approach simplifies data management and reduces overhead.</p>
+
+    <h3>Collections</h3>
+    <p>ToyDB organizes data into collections, allowing you to group related data together. Each collection acts as a container for JSON documents.</p>
+
+    <h3>Query Capabilities</h3>
+    <p>You can perform queries on your data using simple and intuitive commands, enabling efficient data retrieval.</p>
+
+    <h3>Configurable</h3>
+    <p>ToyDB is highly configurable, allowing you to specify the location of your database and customize various settings to meet your application's requirements.</p>
+
+    <h2>Getting Started</h2>
+
+    <p>To get started with ToyDB, follow these steps:</p>
+
+    <ol>
+        <li>Clone this repository to your local machine.</li>
+        <li>Install ToyDB by running the installation script or following the installation instructions in the documentation.</li>
+        <li>Create a new database or use an existing one.</li>
+        <li>Use the command-line interface (CLI) to manage and query your data.</li>
+    </ol>
+
+    <p>For detailed usage instructions, refer to the documentation in the repository.</p>
+
+    <h2>Usage</h2>
+
+    <h3>Flags</h3>
+
+    <ul>
+        <li><code>-location</code>: Specifies the location of your database. Default value is <code>./database</code>.</li>
+        <li><code>-port</code>: Sets the port for the database API. Default value is <code>2080</code>.</li>
+        <li><code>-serve</code>: Starts the server on the given port if provided.</li>
+    </ul>
+
+    <h3>Running the Server</h3>
+
+    <p>To start the ToyDB server, use the <code>-serve</code> flag. For example:</p>
+
+    <pre>
+        <code>./toydb -serve</code>
+    </pre>
+
+    <p>By default, the server will listen on <a href="http://localhost:2080">http://localhost:2080</a>.</p>
+
+    <h2>API Endpoints</h2>
+
+    <ul>
+        <li><code>/: Welcome page with information about ToyDB</code></li>
+        <li><code>/collection: Endpoint for managing collections.</code></li>
+        <li><code>/records: Endpoint for managing records.</code></li>
+        <li><code>/findone: Endpoint for finding a specific record.</code></li>
+        <li><code>/where: Endpoint for querying records based on criteria.</code></li>
+        <li><code>/update: Endpoint for updating records.</code></li>
+        <li><code>/addField: Endpoint for adding a new field to a record.</code></li>
+    </ul>
+
+    <h2>Logging</h2>
+
+    <p>ToyDB logs its activities to a file located at <code>{dbLoc}/logger.log</code> file.</p>
+
+    <h2>Example</h2>
+
+    <p>Here's an example of how to start the ToyDB server:</p>
+
+    <pre>
+        <code>./your-program -serve -location ./your-database-location -port 8080</code>
+    </pre>
+
+    <p>This will start the server on <a href="http://localhost:8080">http://localhost:8080</a>.</p>
+
+    <p>Feel free to explore ToyDB and use it to manage your data efficiently.</p>
+
+    <h2>Documentation</h2>
+
+    <p>For more information on how to use ToyDB, consult the official documentation <a href="link-to-your-documentation">here</a>.</p>
+
+    <h2>Contributing</h2>
+
+    <p>We welcome contributions from the community! If you have suggestions, bug reports, or want to contribute code, please open an issue or submit a pull request on this repository.</p>
+
+    <h2>License</h2>
+
+    <p>ToyDB is open-source and released under the <a href="#">[License Name]</a> license. See the <a href="LICENSE">LICENSE</a> file for details.</p>
+
+    <h2>Acknowledgments</h2>
+
+    <p>We would like to thank the open-source community for their support and contributions to ToyDB.</p>
+
+    <hr>
+
+    <p id="desc">Thank you for choosing ToyDB. Simplify your data management with ease!</p>
+
+</body>
+
+</html>
+
+	`))
 }
 
 func NewApi(loc string, logger string, col Driver.Collection) *DBApi {
