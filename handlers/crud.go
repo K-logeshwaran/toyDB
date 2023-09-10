@@ -24,8 +24,14 @@ type DBApi struct {
 func (a *DBApi) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	fmt.Println("Logger value")
 	log.Println("dassadasd")
+	fmt.Println(a.D.Where("users", "name", "Cynthia"))
+	bb, _ := a.D.Where("users", "name", "Cynthia")
+	fmt.Println(Driver.WrapperArrayToBytes(bb))
+	log.Println(a.D.Where("users", "name", "Cynthia"))
+	//WrapperArrayToBytes
+
 	fmt.Println("Listening on dasdasda")
-	rw.Write(TOBYTES("Bro am working"))
+	rw.Write(Driver.WrapperArrayToBytes(bb))
 }
 
 func NewApi(loc string, logger string, col Driver.Collection) *DBApi {
@@ -55,12 +61,14 @@ func (a *DBApi) Collection(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
+
 	switch r.Method {
 
 	case http.MethodGet:
 		clc := r.FormValue("collection")
 		limit := r.FormValue("limit")
-
+		done := make(chan bool, 1)
+		reschan := make(chan Driver.Wrapper, 100)
 		l, err := strconv.Atoi(limit)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
@@ -69,14 +77,31 @@ func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
 			return
 
 		}
-		rw.Header().Set("Content-Type", "application/json")
-		wraper, err := a.D.ReadAll(clc, l)
+		wrapperArray := []Driver.Wrapper{}
+
+		err = a.D.ReadAllGPt(clc, l, done, reschan)
 		if err != nil {
 			rw.WriteHeader(http.StatusBadRequest)
 			rw.Write(TOBYTES("Collection Does not Exists "))
 			return
 		}
-		rw.Write(Driver.WrapperArrayToBytes(wraper))
+		for wp := range reschan {
+			fmt.Println("reading........")
+			wrapperArray = append(wrapperArray, wp)
+		}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(Driver.WrapperArrayToBytes(wrapperArray))
+
+		// for {
+		// 	select {
+		// 	case rc := <-wraper:
+		// 		wrapperArray = append(wrapperArray, rc)
+		// 	case d := <-done:
+		// 		if d {
+		// 			rw.Write(Driver.WrapperArrayToBytes(wrapperArray))
+		// 		}
+		// 	}
+		// }
 
 	case http.MethodPost:
 		clc := r.FormValue("collection")
@@ -106,6 +131,7 @@ func (a *DBApi) Records(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (a *DBApi) FindOne(rw http.ResponseWriter, r *http.Request) {
+
 	switch r.Method {
 
 	case http.MethodGet:
@@ -126,19 +152,25 @@ func (a *DBApi) FindOne(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (a *DBApi) Where(rw http.ResponseWriter, r *http.Request) {
+
 	switch r.Method {
 
 	case http.MethodGet:
 		id := r.FormValue("field")
 		value := r.FormValue("value")
 		clc := r.FormValue("collection")
-		rw.Header().Set("Cont	ent-Type", "application/json")
+		log.Println(id, value, clc)
+		fmt.Println(id, value, clc)
 		wraper, err := a.D.Where(clc, id, value)
+		//users&field=name&value=Cynthia
+
+		fmt.Println(err)
 		if err != nil {
 			rw.WriteHeader(http.StatusBadRequest)
 			rw.Write(TOBYTES("Record with " + id + "Doesnot exists"))
 			return
 		}
+		rw.Header().Set("Content-Type", "application/json")
 		rw.Write(Driver.WrapperArrayToBytes(wraper))
 	default:
 		rw.Write(TOBYTES("METHOD NOT ALLOWED"))

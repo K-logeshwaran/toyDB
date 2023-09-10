@@ -3,10 +3,12 @@ package Driver
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/google/uuid"
@@ -164,9 +166,9 @@ func createuuid() string {
 }
 
 // Done
-func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
+func (d *DataBase) ReadAll(collection string, limit int, don chan bool, resultCh chan Wrapper) (chan Wrapper, error) {
 	//count := 0
-	w := []Wrapper{}
+	//w := []Wrapper{}
 	loc := path.Join(d.Location, collection)
 	records, err := os.ReadDir(loc)
 	if err != nil {
@@ -176,18 +178,21 @@ func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
 		log.Println("LIMIT EXITED; LIMIT IS ", len(records))
 		limit = len(records) - 1
 	}
-	resultCh := make(chan Wrapper)
+	// resultCh := make(chan Wrapper)
 	errorCh := make(chan error)
-	for i := 0; i < limit; i++ {
-		go func(record os.DirEntry) {
-			r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
-			if err != nil {
-				errorCh <- err
-				return
-			}
-			resultCh <- *BuildWrapper(r)
-		}(records[i])
-	}
+
+	var wg sync.WaitGroup
+	// for i := 0; i < limit; i++ {
+	// 	go func(record os.DirEntry) {
+	// 		r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
+	// 		if err != nil {
+	// 			errorCh <- err
+	// 			return
+	// 		}
+	// 		resultCh <- *BuildWrapper(r)
+	// 	}(records[i])
+	// }
+
 	// for _, record := range records {
 	// 	// if count == limit {
 	// 	// 	break
@@ -204,16 +209,36 @@ func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
 	// 	//count += 1
 	// }
 	for i := 0; i < limit; i++ {
-		select {
-		case wrapper := <-resultCh:
-			w = append(w, wrapper)
-		case err := <-errorCh:
-			close(resultCh)
-			close(errorCh)
-			log.Panicln(err)
-			return nil, err
-		}
+		wg.Add(1)
+		go func(record os.DirEntry) {
+			defer wg.Done()
+			r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
+			if err != nil {
+				errorCh <- err
+				return
+			}
+			resultCh <- *BuildWrapper(r)
+		}(records[i])
 	}
+
+	go func(done chan bool) {
+		wg.Wait()
+		done <- true
+		close(resultCh)
+		close(errorCh)
+	}(don)
+
+	// for i := 0; i < limit; i++ {
+	// 	select {
+	// 	case wrapper := <-resultCh:
+	// 		w = append(w, wrapper)
+	// 	case err := <-errorCh:
+	// 		close(resultCh)
+	// 		close(errorCh)
+	// 		log.Panicln(err)
+	// 		return nil, err
+	// 	}
+	// }
 
 	//OLD CODE
 	// for _, record := range records {
@@ -224,8 +249,50 @@ func (d *DataBase) ReadAll(collection string, limit int) ([]Wrapper, error) {
 	// 	}
 	// 	w = append(w, *BuildWrapper(r))
 	// }
-	return w, nil
+	return nil, nil
 
+}
+
+func (d *DataBase) ReadAllGPt(collection string, limit int, done chan bool, resultCh chan Wrapper) error {
+	loc := path.Join(d.Location, collection)
+	records, err := os.ReadDir(loc)
+	if err != nil {
+		return errors.New("Collection does not exist")
+	}
+	if limit > len(records) {
+		limit = len(records)
+	}
+
+	var wg sync.WaitGroup
+	errorCh := make(chan error, len(records))
+
+	for i := 0; i < limit; i++ {
+		wg.Add(1)
+		go func(record os.DirEntry) {
+			defer wg.Done()
+			r, err := os.ReadFile(path.Join(d.Location, collection, record.Name()))
+			if err != nil {
+				errorCh <- err
+				return
+			}
+			resultCh <- *BuildWrapper(r)
+		}(records[i])
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultCh)
+		close(errorCh)
+	}()
+
+	// Handle errors concurrently (if needed)
+	go func() {
+		for err := range errorCh {
+			log.Println("Error:", err)
+		}
+	}()
+
+	return nil
 }
 
 // Done
@@ -289,21 +356,36 @@ func (d *DataBase) ListCollections() *Wrapper {
 }
 
 func (d *DataBase) Where(collection string, field string, value interface{}) ([]Wrapper, error) {
+	var wg sync.WaitGroup
 	var reA []Wrapper
+	resChan := make(chan Wrapper, 300)
 	if d.IsCollectionExist(collection) {
 		loc := path.Join(d.Location, collection)
 		files, err := os.ReadDir(loc)
 
 		if err != nil {
-			panic("Err line 113")
+			log.Panicln(err.Error())
 		}
-		for _, v := range files {
 
-			d, _ := os.ReadFile(path.Join(loc, v.Name()))
-			w := BuildWrapper(d)
-			if w.Value()[field] == value {
-				reA = append(reA, w.Value())
-			}
+		for _, v := range files {
+			wg.Add(1)
+			go func(val fs.DirEntry) {
+				defer wg.Done()
+				d, _ := os.ReadFile(path.Join(loc, val.Name()))
+				w := BuildWrapper(d)
+				if w.Value()[field] == value {
+					resChan <- w.Value()
+					//reA = append(reA, w.Value())
+				}
+			}(v)
+
+		}
+		go func() {
+			wg.Wait()
+			close(resChan)
+		}()
+		for val := range resChan {
+			reA = append(reA, val)
 		}
 		return reA, nil
 	} else {

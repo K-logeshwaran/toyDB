@@ -226,16 +226,19 @@ import time
 
 # import required modules
 
-import json
+
+
  
 # Making a get request
  
 # Pretty Printing JSON string back
+start_time = time.time()
 for i in range(55):
-    f=requests.get("http://localhost:2080/records?collection=users&limit=3000000")
+    f=requests.get("http://localhost:2080/records?limit=40000&collection=users")
     if f.status_code==200:
-        print("Success")
+        print("Success",i)
     else:
         print("Failure")
-    time.sleep(.2)
+    # time.sleep()
+print("--- %s seconds ---" % (time.time() - start_time))
 #print(json.dumps(f.json(), indent=4, sort_keys=True))
