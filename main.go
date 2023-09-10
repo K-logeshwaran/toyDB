@@ -48,7 +48,7 @@ func main() {
 		runserver bool
 	)
 	flag.StringVar(&dbLoc, "location", "./database", "Location of your Database")
-	flag.StringVar(&PORT, "port", "2080", "sets port for database api")
+	flag.StringVar(&PORT, "port", "3134", "sets port for database api")
 	flag.BoolVar(&runserver, "serve", false, "starts the server on the given port")
 	flag.Parse()
 	if !runserver {
