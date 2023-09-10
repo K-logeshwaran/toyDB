@@ -2,9 +2,13 @@
 
 The `Driver` package provides essential functionalities for ToyDB, a lightweight JSON database solution.
 
-## Data Structures
+## Types
+- DataBase
+- Collection
+- Wrapper
 
-### `DataBase`
+
+# `DataBase Struct`
 
 `DataBase` is a struct representing the main database instance in ToyDB.
 
@@ -111,3 +115,99 @@ Queries records in a collection where a specific field matches a value.
 - `collection`: The name of the collection to query.
 - `field`: The field to match.
 - `value`: The value to match against the specified field.
+
+# `Collection Struct`
+
+Represents a collection of strings.
+
+- **Collections** (Field): An array of strings representing the collection names.
+
+## Functions
+
+### `CreateCollectionFiles(loc string)`
+
+Creates a collections JSON file at the specified location if it does not already exist.
+
+- `loc` (string): The directory path where the collections JSON file should be created.
+
+### `NewCollection(dbloc string) Collection`
+
+Creates a new `Collection` instance by reading data from a collections JSON file.
+
+- `dbloc` (string): The directory path where the collections JSON file is located.
+
+- Returns: A `Collection` instance populated with data from the JSON file.
+
+### `(c *Collection) AddCollection(cl string)`
+
+Adds a new collection name to the `Collection` instance.
+
+- `c` (*Collection): The `Collection` instance to which the new collection name should be added.
+- `cl` (string): The name of the collection to be added.
+
+### `(c *Collection) Commit(dbloc string)`
+
+Commits changes made to the `Collection` instance by writing data back to the collections JSON file.
+
+- `c` (*Collection): The `Collection` instance to be committed.
+- `dbloc` (string): The directory path where the collections JSON file should be saved.
+
+
+# `Wrapper Struct`
+
+The `Wrapper` type is a map of string keys to interface values, providing flexibility in constructing and manipulating JSON-like structures.
+
+## Functions
+
+### `BuildWrapper(Data []byte) *Wrapper`
+
+Creates and returns a new `Wrapper` instance by unmarshaling JSON data.
+
+- `Data` ([]byte): The JSON data to be used for building the `Wrapper` structure.
+- Returns: A pointer to a `Wrapper` instance.
+
+### `(w *Wrapper) AddField(name string, value interface{}) *Wrapper`
+
+Adds a new field with a specified name and value to the `Wrapper`.
+
+- `w` (*Wrapper): The `Wrapper` instance to which the field should be added.
+- `name` (string): The name of the field.
+- `value` (interface{}): The value of the field.
+- Returns: A pointer to the modified `Wrapper` instance.
+
+### `(w *Wrapper) Update(name string, value interface{}) *Wrapper`
+
+Updates an existing field in the `Wrapper` with a new value.
+
+- `w` (*Wrapper): The `Wrapper` instance to be updated.
+- `name` (string): The name of the field to be updated.
+- `value` (interface{}): The new value for the field.
+- Returns: A pointer to the modified `Wrapper` instance.
+
+### `(w *Wrapper) Value() map[string]interface{}`
+
+Returns the underlying map of the `Wrapper`.
+
+- Returns: A map[string]interface{} containing the data of the `Wrapper`.
+
+### `(w *Wrapper) ToBytes() []byte`
+
+Serializes the `Wrapper` to a JSON byte array.
+
+- Returns: A byte slice containing the JSON representation of the `Wrapper`.
+
+### `(w *Wrapper) ToJson() string`
+
+Serializes the `Wrapper` to a JSON string.
+
+- Returns: A string containing the JSON representation of the `Wrapper`.
+
+### `WrapperArrayToBytes(W []Wrapper) []byte`
+
+Serializes an array of `Wrapper` instances to a JSON byte array.
+
+- `W` ([]Wrapper): An array of `Wrapper` instances to be serialized.
+- Returns: A byte slice containing the JSON representation of the array of `Wrapper` instances.
+
+
+
