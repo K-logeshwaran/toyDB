@@ -86,8 +86,9 @@ Please replace `./your-program`, `./your-database-location`, and `8080` with the
 ```
 
 ## Documentation
-
-For more information on how to use ToyDB, consult the official documentation [here](link-to-your-documentation).
+Inside every folder have its documentation
+- [Driver](tree/main/Driver)
+- [handler](tree/main/handlers)
 
 ## Contributing
 
