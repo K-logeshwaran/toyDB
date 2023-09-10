@@ -16,8 +16,6 @@ ToyDB organizes data into collections, allowing you to group related data togeth
 ### Query Capabilities
 You can perform queries on your data using simple and intuitive commands, enabling efficient data retrieval.
 
-### Command-Line Interface (CLI)
-ToyDB offers a command-line interface (CLI) for interacting with the database. You can easily create, read, update, and delete data using familiar commands.
 
 ### Configurable
 ToyDB is highly configurable, allowing you to specify the location of your database and customize various settings to meet your application's requirements.
@@ -32,6 +30,55 @@ To get started with ToyDB, follow these steps:
 4. Use the command-line interface (CLI) to manage and query your data.
 
 For detailed usage instructions, refer to the documentation in the repository.
+
+## Usage
+
+### Flags
+
+- `-location`: Specifies the location of your database. Default value is `./database`.
+- `-port`: Sets the port for the database API. Default value is `2080`.
+- `-serve`: Starts the server on the given port if provided.
+
+### Running the Server
+
+To start the ToyDB server, use the `-serve` flag. For example:
+
+```bash
+./toydb -serve
+```
+By default, the server will listen on http://localhost:2080.
+
+## API Endpoints
+
+`/: Welcome page with information about ToyDB`
+
+`/collection: Endpoint for managing collections.`
+
+`/records: Endpoint for managing records.`
+
+`/findone: Endpoint for finding a specific record.`
+
+`/where: Endpoint for querying records based on criteria.`
+
+`/update: Endpoint for updating records.`
+
+`/addField: Endpoint for adding a new field to a record.`
+
+## Logging
+ToyDB logs its activities to a file located at `{dbLoc}/logger.log` file.
+## Example
+Here's an example of how to start the ToyDB server:
+```bash
+./your-program -serve -location ./your-database-location -port 8080
+```
+This will start the server on http://localhost:8080.
+
+Feel free to explore ToyDB and use it to manage your data efficiently.
+
+```
+
+Please replace `./your-program`, `./your-database-location`, and `8080` with the actual values you use when running your program.
+```
 
 ## Documentation
 
