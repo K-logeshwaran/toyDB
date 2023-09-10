@@ -33,6 +33,8 @@ For detailed usage instructions, refer to the documentation in the repository.
 
 ## Usage
 
+## [Node  js Client]("https://github.com/K-logeshwaran/toydb-query")
+
 ### Flags
 
 - `-location`: Specifies the location of your database. Default value is `./database`.
