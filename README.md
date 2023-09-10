@@ -33,7 +33,10 @@ For detailed usage instructions, refer to the documentation in the repository.
 
 ## Usage
 
-## [Node  js Client]("https://github.com/K-logeshwaran/toydb-query")
+## Node  js Client 
+#### `To access Node js client click `
+
+## https://github.com/K-logeshwaran/toydb-query (nodejs client)
 
 ### Flags
 
