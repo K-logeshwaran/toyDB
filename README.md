@@ -42,7 +42,7 @@ To get started with ToyDB, follow these steps:
 ### Flags
 
 - `-location`: Specifies the location of your database. Default value is `./database`.
-- `-port`: Sets the port for the database API. Default value is `2080`.
+- `-port`: Sets the port for the database API. Default value is `3134`.
 - `-serve`: Starts the server on the given port if provided.
 
 ### Running the Server
@@ -52,7 +52,7 @@ To start the ToyDB server, use the `-serve` flag. For example:
 ```bash
 ./toydb -serve
 ```
-By default, the server will listen on http://localhost:2080.
+By default, the server will listen on http://localhost:3134.
 
 ## API Endpoints
 
