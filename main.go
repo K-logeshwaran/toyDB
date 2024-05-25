@@ -14,9 +14,9 @@ func TOBYTES(s string) []byte {
 }
 
 /*
-=============================================================
-Welcome to ToyDB - Your Lightweight JSON Database Solution
-=============================================================
+==================================================================================================================
+			Welcome to ToyDB - Your Lightweight JSON Database implementation 
+==================================================================================================================
 
 ToyDB is ready to help you manage your data efficiently. Here are a few things you can do:
 
